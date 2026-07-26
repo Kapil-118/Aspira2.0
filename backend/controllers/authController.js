@@ -41,28 +41,29 @@ const register = async (req, res) => {
       isApproved: finalRole === 'mentor' ? false : true
     });
 
-    // Send verification email
-    try {
-      await sendEmail({
-        to: user.email,
-        subject: 'Aspira Account Verification OTP',
-        text: `Welcome to Aspira, ${user.name}! Your verification OTP is: ${otpCode}. Valid for 10 minutes.`,
-        html: `
-          <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; border: 1px solid #ddd; border-radius: 8px;">
-            <h2 style="color: #4F46E5;">Welcome to Aspira!</h2>
-            <p>Thank you for registering. Please use the following One-Time Password (OTP) to verify your account:</p>
-            <div style="background-color: #F3F4F6; padding: 15px; font-size: 24px; font-weight: bold; text-align: center; border-radius: 6px; letter-spacing: 4px; margin: 20px 0; color: #111827;">
-              ${otpCode}
-            </div>
-            <p style="font-size: 14px; color: #6B7280;">This OTP will expire in 10 minutes.</p>
-            <hr style="border: 0; border-top: 1px solid #E5E7EB; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #9CA3AF;">If you did not request this registration, please ignore this email.</p>
+    // Log generated OTP to server logs for dev/fallback convenience
+    console.log(`[OTP DISPATCH] Generated OTP ${otpCode} for user ${user.email}`);
+
+    // Send verification email asynchronously in background
+    sendEmail({
+      to: user.email,
+      subject: 'Aspira Account Verification OTP',
+      text: `Welcome to Aspira, ${user.name}! Your verification OTP is: ${otpCode}. Valid for 10 minutes.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; border: 1px solid #ddd; border-radius: 8px;">
+          <h2 style="color: #4F46E5;">Welcome to Aspira!</h2>
+          <p>Thank you for registering. Please use the following One-Time Password (OTP) to verify your account:</p>
+          <div style="background-color: #F3F4F6; padding: 15px; font-size: 24px; font-weight: bold; text-align: center; border-radius: 6px; letter-spacing: 4px; margin: 20px 0; color: #111827;">
+            ${otpCode}
           </div>
-        `
-      });
-    } catch (mailError) {
+          <p style="font-size: 14px; color: #6B7280;">This OTP will expire in 10 minutes.</p>
+          <hr style="border: 0; border-top: 1px solid #E5E7EB; margin: 20px 0;" />
+          <p style="font-size: 12px; color: #9CA3AF;">If you did not request this registration, please ignore this email.</p>
+        </div>
+      `
+    }).catch(mailError => {
       console.error('Nodemailer failed to dispatch verification email on registration:', mailError.message);
-    }
+    });
 
     res.status(201).json({
       success: true,
@@ -160,25 +161,25 @@ const login = async (req, res) => {
       user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
       await user.save();
 
-      try {
-        await sendEmail({
-          to: user.email,
-          subject: 'Aspira Account Verification OTP',
-          text: `Your verification OTP is: ${otpCode}. Valid for 10 minutes.`,
-          html: `
-            <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; border: 1px solid #ddd; border-radius: 8px;">
-              <h2 style="color: #4F46E5;">Please Verify Your Account</h2>
-              <p>Your account is not verified. Use the following One-Time Password (OTP) to complete verification:</p>
-              <div style="background-color: #F3F4F6; padding: 15px; font-size: 24px; font-weight: bold; text-align: center; border-radius: 6px; letter-spacing: 4px; margin: 20px 0; color: #111827;">
-                ${otpCode}
-              </div>
-              <p style="font-size: 14px; color: #6B7280;">This OTP will expire in 10 minutes.</p>
+      console.log(`[OTP DISPATCH] Generated unverified login OTP ${otpCode} for user ${user.email}`);
+
+      sendEmail({
+        to: user.email,
+        subject: 'Aspira Account Verification OTP',
+        text: `Your verification OTP is: ${otpCode}. Valid for 10 minutes.`,
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; border: 1px solid #ddd; border-radius: 8px;">
+            <h2 style="color: #4F46E5;">Please Verify Your Account</h2>
+            <p>Your account is not verified. Use the following One-Time Password (OTP) to complete verification:</p>
+            <div style="background-color: #F3F4F6; padding: 15px; font-size: 24px; font-weight: bold; text-align: center; border-radius: 6px; letter-spacing: 4px; margin: 20px 0; color: #111827;">
+              ${otpCode}
             </div>
-          `
-        });
-      } catch (mailError) {
+            <p style="font-size: 14px; color: #6B7280;">This OTP will expire in 10 minutes.</p>
+          </div>
+        `
+      }).catch(mailError => {
         console.error('Nodemailer failed to dispatch OTP email on unverified login:', mailError.message);
-      }
+      });
 
       return res.status(403).json({
         success: false,
@@ -235,25 +236,25 @@ const forgotPassword = async (req, res) => {
     user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
 
-    try {
-      await sendEmail({
-        to: user.email,
-        subject: 'Aspira Password Reset OTP',
-        text: `Your password reset OTP is: ${otpCode}. Valid for 10 minutes.`,
-        html: `
-          <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; border: 1px solid #ddd; border-radius: 8px;">
-            <h2 style="color: #EF4444;">Password Reset Request</h2>
-            <p>You requested a password reset. Please use the following One-Time Password (OTP) to verify your identity:</p>
-            <div style="background-color: #F3F4F6; padding: 15px; font-size: 24px; font-weight: bold; text-align: center; border-radius: 6px; letter-spacing: 4px; margin: 20px 0; color: #111827;">
-              ${otpCode}
-            </div>
-            <p style="font-size: 14px; color: #6B7280;">This OTP will expire in 10 minutes.</p>
+    console.log(`[OTP DISPATCH] Generated Forgot Password OTP ${otpCode} for user ${user.email}`);
+
+    sendEmail({
+      to: user.email,
+      subject: 'Aspira Password Reset OTP',
+      text: `Your password reset OTP is: ${otpCode}. Valid for 10 minutes.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; border: 1px solid #ddd; border-radius: 8px;">
+          <h2 style="color: #EF4444;">Password Reset Request</h2>
+          <p>You requested a password reset. Please use the following One-Time Password (OTP) to verify your identity:</p>
+          <div style="background-color: #F3F4F6; padding: 15px; font-size: 24px; font-weight: bold; text-align: center; border-radius: 6px; letter-spacing: 4px; margin: 20px 0; color: #111827;">
+            ${otpCode}
           </div>
-        `
-      });
-    } catch (mailError) {
+          <p style="font-size: 14px; color: #6B7280;">This OTP will expire in 10 minutes.</p>
+        </div>
+      `
+    }).catch(mailError => {
       console.error('Nodemailer failed to dispatch OTP email on forgot password request:', mailError.message);
-    }
+    });
 
     res.status(200).json({
       success: true,
