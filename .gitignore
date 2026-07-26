@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Environment Variables & Secrets
+.env
+*.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# Production Builds
+dist/
+build/
+*.log
+
+# IDE & System Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
