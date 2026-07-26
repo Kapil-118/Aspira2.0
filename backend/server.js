@@ -20,18 +20,19 @@ const allowedOrigins = process.env.CLIENT_URL
   : ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'];
 
 const corsOriginHandler = (origin, callback) => {
-  if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
-    callback(null, true);
-  } else {
-    callback(null, true);
+  // Return the request origin so Access-Control-Allow-Origin matches header with credentials
+  if (!origin) return callback(null, true);
+  if (allowedOrigins.includes('*') || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+    return callback(null, origin);
   }
+  return callback(null, origin);
 };
 
 // Initialize Socket.IO Server
 const io = socketio(server, {
   cors: {
     origin: corsOriginHandler,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true
   }
 });
@@ -49,7 +50,9 @@ app.use(helmet({
 
 app.use(cors({
   origin: corsOriginHandler,
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
 
 app.use(express.json());
