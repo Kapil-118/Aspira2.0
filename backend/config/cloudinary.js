@@ -1,16 +1,16 @@
 const cloudinary = require('cloudinary').v2;
 
-const isCloudinaryConfigured = !!(
-  process.env.CLOUDINARY_NAME &&
-  process.env.CLOUDINARY_KEY &&
-  process.env.CLOUDINARY_SECRET
-);
+const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_NAME;
+const apiKey = process.env.CLOUDINARY_API_KEY || process.env.CLOUDINARY_KEY;
+const apiSecret = process.env.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_SECRET;
+
+const isCloudinaryConfigured = !!(cloudName && apiKey && apiSecret);
 
 if (isCloudinaryConfigured) {
   cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_NAME,
-    api_key: process.env.CLOUDINARY_KEY,
-    api_secret: process.env.CLOUDINARY_SECRET
+    cloud_name: cloudName,
+    api_key: apiKey,
+    api_secret: apiSecret
   });
   console.log('Cloudinary Service Configured Successfully.');
 } else {
