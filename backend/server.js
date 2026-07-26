@@ -15,23 +15,10 @@ const { apiLimiter } = require('./middlewares/rateLimiter');
 const app = express();
 const server = http.createServer(app);
 
-const allowedOrigins = process.env.CLIENT_URL
-  ? process.env.CLIENT_URL.split(',').map(url => url.trim())
-  : ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'];
-
-const corsOriginHandler = (origin, callback) => {
-  // Return the request origin so Access-Control-Allow-Origin matches header with credentials
-  if (!origin) return callback(null, true);
-  if (allowedOrigins.includes('*') || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
-    return callback(null, origin);
-  }
-  return callback(null, origin);
-};
-
 // Initialize Socket.IO Server
 const io = socketio(server, {
   cors: {
-    origin: corsOriginHandler,
+    origin: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true
   }
@@ -43,16 +30,20 @@ socketHandler(io);
 // Connect to Database
 connectDB();
 
-// Global Middlewares
-app.use(helmet({
-  crossOriginResourcePolicy: false // Allows hosting static images without security block
-}));
-
+// Global CORS Middleware - Enable dynamic origin reflection with credentials
 app.use(cors({
-  origin: corsOriginHandler,
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+}));
+
+// Explicitly handle HTTP OPTIONS preflight requests for all routes
+app.options('*', cors());
+
+// Security Headers
+app.use(helmet({
+  crossOriginResourcePolicy: false // Allows hosting static images without security block
 }));
 
 app.use(express.json());
