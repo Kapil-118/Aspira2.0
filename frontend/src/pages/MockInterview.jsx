@@ -393,7 +393,7 @@ const MockInterview = () => {
                   {/* Dynamic Question Bubble */}
                   <div className="flex flex-col gap-2">
                     <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">&gt;&gt; INTERVIEWER AI</span>
-                    <p className="text-gray-100 text-sm leading-relaxed">{currentQuestion}</p>
+                    <p className="!text-gray-100 text-sm leading-relaxed">{currentQuestion}</p>
                   </div>
 
                   {/* Input Response Box */}

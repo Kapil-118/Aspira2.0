@@ -55,8 +55,14 @@ body.light-mode .bg-emerald-600 *,
 body.light-mode .bg-red-600,
 body.light-mode .bg-red-600 *,
 body.light-mode .bg-amber-600,
-body.light-mode .bg-amber-600 * {
-  color: #ffffff !important;
+body.light-mode .bg-amber-600 *,
+body.light-mode .bg-\[\#0b0f19\],
+body.light-mode .bg-\[\#0b0f19\] p,
+body.light-mode .bg-\[\#0b0f19\] span,
+body.light-mode .bg-\[\#0b0f19\] div,
+body.light-mode .bg-\[\#0d1220\],
+body.light-mode .bg-\[\#0d1220\] textarea {
+  color: #f3f4f6 !important;
 }
 
 /* Fix brand logo text gradient visibility */
