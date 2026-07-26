@@ -3,7 +3,7 @@ import axios from 'axios';
 // Base API configuration
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
-  timeout: 15000,
+  timeout: 60000, // 60s timeout to allow Render free instances to spin up on cold start
   headers: {
     'Content-Type': 'application/json'
   }
